@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon 20 in 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 4rem 5rem 3rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+
+  .title-block h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    font-weight: 900;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    text-transform: uppercase;
+  }
+
+  .title-block p {
+    margin-top: 0.6rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.25em;
+    color: #aaa;
+    text-transform: uppercase;
+  }
+
+  .header-right {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: #aaa;
+    text-transform: uppercase;
+    text-align: right;
+    line-height: 2.2;
+  }
+
+  .header-right strong { color: #fff; }
+
+  .attribution {
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: #888;
+    text-align: right;
+    line-height: 1.9;
+    text-transform: none;
+    margin-top: 0.5rem;
+  }
+
+  .attribution a {
+    color: #bbb;
+    text-decoration: none;
+    border-bottom: 1px solid #555;
+    transition: color 0.18s, border-color 0.18s;
+  }
+
+  .attribution a:hover {
+    color: #fff;
+    border-color: #fff;
+  }
+
+  .divider { height: 1px; background: #161616; margin: 0 5rem; }
+
+  /* ── FILTER BAR ── */
+  .filter-bar {
+    padding: 1.8rem 5rem;
+    display: flex;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .filter-label {
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    color: #888;
+    text-transform: uppercase;
+    margin-right: 0.6rem;
+  }
+
+  .pill {
+    background: transparent;
+    border: 1px solid #444;
+    color: #aaa;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.18s;
+    border-radius: 2px;
+  }
+
+  .pill:hover { border-color: #444; color: #888; }
+  .pill.active { border-color: #fff; color: #fff; background: rgba(255,255,255,0.04); }
+
+  /* ── GRID ── */
+  .grid-wrapper { padding: 2.5rem 5rem 5rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 2.2rem;
+  }
+
+  /* ── CARD ── */
+  .card {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    animation: fadeUp 0.4s ease both;
+    animation-delay: calc(var(--i, 0) * 0.03s);
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .card.hidden { display: none; }
+
+  .card-img-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: #0d0d0d;
+  }
+
+  .card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease, filter 0.3s ease;
+    filter: brightness(0.8);
+  }
+
+  .card:hover .card-img {
+    transform: scale(1.06);
+    filter: brightness(1);
+  }
+
+  .card-img-fallback {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    color: #1e1e1e;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 1rem;
+    line-height: 1.2;
+  }
+
+  .card-play {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.22s;
+  }
+
+  .card:hover .card-play { opacity: 1; }
+
+  .card-play span {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+    color: #fff;
+    text-transform: uppercase;
+    border: 1px solid rgba(255,255,255,0.55);
+    padding: 0.5rem 1.4rem;
+  }
+
+  /* ── CARD INFO ── */
+  .card-info { padding: 0.9rem 0 0; }
+
+  .card-num {
+    font-size: 0.56rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    color: #777;
+    text-transform: uppercase;
+    margin-bottom: 0.25rem;
+  }
+
+  .card-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-gen {
+    font-size: 0.56rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    color: #777;
+    text-transform: uppercase;
+    margin-top: 0.2rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid #111;
+    padding: 1.5rem 5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: #777;
+    text-transform: uppercase;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* ── GAME OVERLAY ── */
+  .game-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000;
+    z-index: 999;
+    flex-direction: column;
+  }
+
+  .game-overlay.active { display: flex; }
+
+  .game-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.5rem;
+    background: #000;
+    border-bottom: 1px solid #1a1a1a;
+    flex-shrink: 0;
+    gap: 1rem;
+    position: relative;
+  }
+
+  /* Progress bar sits at very bottom of topbar */
+  .game-progress-track {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: #111;
+  }
+
+  .game-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    transition: width 0.25s ease;
+  }
+
+  .game-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .game-topbar-title {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+  }
+
+  .game-load-status {
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #444;
+    white-space: nowrap;
+    transition: color 0.3s;
+  }
+
+  .game-load-status.loading { color: #777; }
+  .game-load-status.ready   { color: #aaa; }
+
+  .back-btn {
+    background: transparent;
+    border: 1px solid #333;
+    color: #aaa;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.45rem 1.1rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .back-btn:hover {
+    border-color: #fff;
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+  }
+
+  .back-btn svg { flex-shrink: 0; }
+
+  .game-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    background: #000;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .game-frame.loaded { opacity: 1; }
+
+  /* Splash shown while iframe loads */
+  .game-splash {
+    position: absolute;
+    inset: 44px 0 0 0; /* below topbar */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .game-splash.hidden { opacity: 0; }
+
+  .game-splash-title {
+    font-size: clamp(1.4rem, 4vw, 2.5rem);
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .game-splash-bar-wrap {
+    width: min(340px, 70vw);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .game-splash-track {
+    width: 100%;
+    height: 2px;
+    background: #1a1a1a;
+  }
+
+  .game-splash-fill {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    transition: width 0.25s ease;
+  }
+
+  .game-splash-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.58rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #444;
+  }
+
+  .game-splash-pct { color: #777; }
+
+
+  /* ── TIP BANNER ── */
+  .tip-banner {
+    margin: 0 5rem 0;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid #333;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .tip-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    align-self: center;
+  }
+
+  .tip-text {
+    font-size: 0.63rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: #ccc;
+    line-height: 1.75;
+  }
+
+  .tip-text strong {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  @media (max-width: 700px) {
+    header, .filter-bar, .grid-wrapper, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .divider { margin: 0 1.5rem; }
+    .grid { grid-template-columns: repeat(auto-fill, minmax(145px, 1fr)); gap: 1.2rem; }
+    header { padding-top: 2.5rem; }
+    .tip-banner { margin: 0 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="title-block">
+    <h1>Pokémon 20 in 1</h1>
+    <p>Created by Story Network ~ Camzzz 2026</p>
+  </div>
+  <div style="text-align:right;">
+    <div class="header-right">
+      <strong>20 Games</strong><br>
+      Generation I — V
+    </div>
+    <div class="attribution">
+      Launcher by <a href="https://discord.gg/fsbkT6Yf3Y" target="_blank">Story Network</a><br>
+      Files from <a href="https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/edit?tab=t.0" target="_blank">Ultimate Game Stash</a>
+    </div>
+  </div>
+</header>
+
+<div class="divider"></div>
+
+<div class="filter-bar">
+  <span class="filter-label">Filter</span>
+  <button class="pill active" onclick="filter('all', this)">All</button>
+  <button class="pill" onclick="filter('gen1', this)">Gen I</button>
+  <button class="pill" onclick="filter('gen2', this)">Gen II</button>
+  <button class="pill" onclick="filter('gen3', this)">Gen III</button>
+  <button class="pill" onclick="filter('gen4', this)">Gen IV</button>
+  <button class="pill" onclick="filter('gen5', this)">Gen V</button>
+</div>
+
+<div class="tip-banner">
+  <span class="tip-icon">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="7.5" cy="7.5" r="6.75" stroke="#aaa" stroke-width="1.2"/>
+      <line x1="7.5" y1="6.5" x2="7.5" y2="11" stroke="#aaa" stroke-width="1.3" stroke-linecap="round"/>
+      <circle cx="7.5" cy="4.2" r="0.75" fill="#aaa"/>
+    </svg>
+  </span>
+  <span class="tip-text">
+    <strong>Heads up:</strong> Many games may not load on the first try, this is normal! If a game doesn't load, just close it and click Play again. Wait a few seconds between each attempt. <strong>Every game works 100%</strong>, it just sometimes takes a couple of tries to get going lol.
+  </span>
+</div>
+
+<div class="grid-wrapper">
+  <div class="grid" id="grid">
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/1-pokered.html" style="--i:0" data-gen="gen1">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/red.jpg" alt="Pokémon Red" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Red</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#001</div>
+        <div class="card-title">Pokémon Red</div>
+        <div class="card-gen">Gen I</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/2-pokeblue.html" style="--i:1" data-gen="gen1">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/blue.jpg" alt="Pokémon Blue" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Blue</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#002</div>
+        <div class="card-title">Pokémon Blue</div>
+        <div class="card-gen">Gen I</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/3-pokeyellow.html" style="--i:2" data-gen="gen1">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/yellow.jpg" alt="Pokémon Yellow" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Yellow</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#003</div>
+        <div class="card-title">Pokémon Yellow</div>
+        <div class="card-gen">Gen I</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/4-pokemongold.html" style="--i:3" data-gen="gen2">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/gold.jpg" alt="Pokémon Gold" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Gold</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#004</div>
+        <div class="card-title">Pokémon Gold</div>
+        <div class="card-gen">Gen II</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/5-pokemonsilver.html" style="--i:4" data-gen="gen2">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/silver.jpg" alt="Pokémon Silver" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Silver</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#005</div>
+        <div class="card-title">Pokémon Silver</div>
+        <div class="card-gen">Gen II</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/6-pokemoncrystal.html" style="--i:5" data-gen="gen2">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/crystal.jpg" alt="Pokémon Crystal" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Crystal</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#006</div>
+        <div class="card-title">Pokémon Crystal</div>
+        <div class="card-gen">Gen II</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/7-pokeruby.html" style="--i:6" data-gen="gen3">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/ruby.jpg" alt="Pokémon Ruby" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Ruby</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#007</div>
+        <div class="card-title">Pokémon Ruby</div>
+        <div class="card-gen">Gen III</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/8-pokemonsapphire.html" style="--i:7" data-gen="gen3">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/sapphire.jpg" alt="Pokémon Sapphire" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Sapphire</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#008</div>
+        <div class="card-title">Pokémon Sapphire</div>
+        <div class="card-gen">Gen III</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/9-pokemonemerald.html" style="--i:8" data-gen="gen3">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/emerald.jpg" alt="Pokémon Emerald" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Emerald</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#009</div>
+        <div class="card-title">Pokémon Emerald</div>
+        <div class="card-gen">Gen III</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/10-pokemonleafgreen.html" style="--i:9" data-gen="gen3">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/leafgreen.jpg" alt="Pokémon LeafGreen" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">LeafGreen</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#010</div>
+        <div class="card-title">Pokémon LeafGreen</div>
+        <div class="card-gen">Gen III</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/11-pokemonfirered.html" style="--i:10" data-gen="gen3">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/firered.jpg" alt="Pokémon FireRed" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">FireRed</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#011</div>
+        <div class="card-title">Pokémon FireRed</div>
+        <div class="card-gen">Gen III</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/12-pokediamond.html" style="--i:11" data-gen="gen4">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/diamond.jpg" alt="Pokémon Diamond" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Diamond</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#012</div>
+        <div class="card-title">Pokémon Diamond</div>
+        <div class="card-gen">Gen IV</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/13-pokepearl.html" style="--i:12" data-gen="gen4">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/pearl.jpg" alt="Pokémon Pearl" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Pearl</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#013</div>
+        <div class="card-title">Pokémon Pearl</div>
+        <div class="card-gen">Gen IV</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/14-pokeplatinum.html" style="--i:13" data-gen="gen4">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/platinum.jpg" alt="Pokémon Platinum" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Platinum</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#014</div>
+        <div class="card-title">Pokémon Platinum</div>
+        <div class="card-gen">Gen IV</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/15-pokeheartgold.html" style="--i:14" data-gen="gen4">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/heartgold.jpg" alt="Pokémon HeartGold" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">HeartGold</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#015</div>
+        <div class="card-title">Pokémon HeartGold</div>
+        <div class="card-gen">Gen IV</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/16-pokesoulsilver.html" style="--i:15" data-gen="gen4">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/soulsilver.jpg" alt="Pokémon SoulSilver" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">SoulSilver</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#016</div>
+        <div class="card-title">Pokémon SoulSilver</div>
+        <div class="card-gen">Gen IV</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/17-pokeblack.html" style="--i:16" data-gen="gen5">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/black.jpg" alt="Pokémon Black" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Black</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#017</div>
+        <div class="card-title">Pokémon Black</div>
+        <div class="card-gen">Gen V</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/18-pokewhite.html" style="--i:17" data-gen="gen5">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/white.jpg" alt="Pokémon White" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">White</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#018</div>
+        <div class="card-title">Pokémon White</div>
+        <div class="card-gen">Gen V</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/19-pokeblack2.html" style="--i:18" data-gen="gen5">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/black2.jpg" alt="Pokémon Black 2" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">Black 2</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#019</div>
+        <div class="card-title">Pokémon Black 2</div>
+        <div class="card-gen">Gen V</div>
+      </div>
+    </a>
+
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/20-pokewhite2.html" style="--i:19" data-gen="gen5">
+      <div class="card-img-wrap">
+        <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/white2.jpg" alt="Pokémon White 2" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
+        <div class="card-img-fallback">White 2</div>
+        <div class="card-play"><span>Play</span></div>
+      </div>
+      <div class="card-info">
+        <div class="card-num">#020</div>
+        <div class="card-title">Pokémon White 2</div>
+        <div class="card-gen">Gen V</div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+<!-- ── GAME OVERLAY ── -->
+<div class="game-overlay" id="gameOverlay">
+  <div class="game-topbar">
+    <button class="back-btn" id="backBtn" onclick="closeGame()">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M8 1L3 6L8 11" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Back
+    </button>
+    <span class="game-topbar-title" id="gameTitle"></span>
+    <div class="game-topbar-right">
+      <span class="game-load-status" id="gameLoadStatus">Loading...</span>
+    </div>
+    <div class="game-progress-track">
+      <div class="game-progress-fill" id="gameProgressFill"></div>
+    </div>
+  </div>
+  <!-- Splash shown while loading -->
+  <div class="game-splash" id="gameSplash">
+    <div class="game-splash-title" id="gameSplashTitle"></div>
+    <div class="game-splash-bar-wrap">
+      <div class="game-splash-track">
+        <div class="game-splash-fill" id="gameSplashFill"></div>
+      </div>
+      <div class="game-splash-meta">
+        <span id="gameSplashStatus">Loading game...</span>
+        <span class="game-splash-pct" id="gameSplashPct">0%</span>
+      </div>
+    </div>
+  </div>
+  <iframe class="game-frame" id="gameFrame" src="" allowfullscreen></iframe>
+</div>
+
+<footer>
+  <span>Pokémon Fan Vault</span>
+  <span>20 Fan-Made HTML Recreations · Gen I — V</span>
+</footer>
+
+<script>
+  // ── FILTER ──
+  function filter(gen, btn) {
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.card').forEach(card => {
+      if (gen === 'all' || card.dataset.gen === gen) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  }
+
+  // ── PROGRESS SIMULATION ──
+  // Iframes don't expose real byte progress, so we simulate a believable
+  // ramp that holds just below 100% until the load event fires.
+  let progressTimer = null;
+  let currentPct    = 0;
+
+  function setProgress(pct) {
+    currentPct = pct;
+    document.getElementById('gameProgressFill').style.width = pct + '%';
+    document.getElementById('gameSplashFill').style.width   = pct + '%';
+    document.getElementById('gameSplashPct').textContent    = Math.round(pct) + '%';
+  }
+
+  function startProgress() {
+    currentPct = 0;
+    setProgress(0);
+    clearInterval(progressTimer);
+
+    // Fast ramp to ~30%, then slow crawl to ~88%, then stall waiting for load event
+    progressTimer = setInterval(() => {
+      if (currentPct < 30) {
+        setProgress(currentPct + 2.5);
+      } else if (currentPct < 88) {
+        setProgress(currentPct + 0.4);
+      }
+      // holds at 88 until iframe fires load
+    }, 80);
+  }
+
+  function finishProgress() {
+    clearInterval(progressTimer);
+    setProgress(100);
+    document.getElementById('gameLoadStatus').textContent = 'Ready';
+    document.getElementById('gameLoadStatus').className   = 'game-load-status ready';
+    document.getElementById('gameSplashStatus').textContent = 'Game loaded';
+
+    setTimeout(() => {
+      document.getElementById('gameFrame').classList.add('loaded');
+      document.getElementById('gameSplash').classList.add('hidden');
+    }, 300);
+  }
+
+  // ── OPEN / CLOSE GAME ──
+  let currentBlobUrl = null;
+
+  function openGame(url, title, e) {
+    e.preventDefault();
+
+    const overlay     = document.getElementById('gameOverlay');
+    const frame       = document.getElementById('gameFrame');
+    const splash      = document.getElementById('gameSplash');
+    const titleEl     = document.getElementById('gameTitle');
+    const splashTitle = document.getElementById('gameSplashTitle');
+    const statusEl    = document.getElementById('gameLoadStatus');
+
+    // Reset state
+    frame.classList.remove('loaded');
+    splash.classList.remove('hidden');
+    titleEl.textContent     = title;
+    splashTitle.textContent = title;
+    statusEl.textContent    = 'Loading...';
+    statusEl.className      = 'game-load-status loading';
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    startProgress();
+
+    // Fetch the HTML from jsDelivr and run it as a blob so the browser executes it
+    fetch(url)
+      .then(res => {
+        if (!res.ok) throw new Error('Network response was not ok');
+        return res.text();
+      })
+      .then(html => {
+        // Revoke any previous blob URL to free memory
+        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+
+        const blob = new Blob([html], { type: 'text/html' });
+        currentBlobUrl = URL.createObjectURL(blob);
+
+        frame.onload = () => finishProgress();
+        frame.onerror = () => {
+          clearInterval(progressTimer);
+          setProgress(100);
+          statusEl.textContent = 'Error';
+          document.getElementById('gameSplashStatus').textContent = 'Failed to load — try again';
+        };
+
+        frame.src = currentBlobUrl;
+      })
+      .catch(() => {
+        clearInterval(progressTimer);
+        setProgress(100);
+        statusEl.textContent = 'Error';
+        document.getElementById('gameSplashStatus').textContent = 'Failed to fetch — try again';
+      });
+  }
+
+  function closeGame() {
+    clearInterval(progressTimer);
+    document.getElementById('gameOverlay').classList.remove('active');
+    document.getElementById('gameFrame').src = '';
+    document.getElementById('gameFrame').classList.remove('loaded');
+    document.body.style.overflow = '';
+    if (currentBlobUrl) {
+      URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = null;
+    }
+  }
+
+  // Attach click handlers to all cards
+  document.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      const url   = this.getAttribute('href');
+      const title = this.querySelector('.card-title').textContent;
+      openGame(url, title, e);
+    });
+  });
+</script>
+</body>
+</html>
