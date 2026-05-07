@@ -565,7 +565,7 @@
       </div>
     </a>
 
-    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/6-pokemoncrystal.html" style="--i:5" data-gen="gen2">
+    <a class="card" href="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Games/5-pokemonsilver.html" style="--i:5" data-gen="gen2">
       <div class="card-img-wrap">
         <img class="card-img" src="https://cdn.jsdelivr.net/gh/storynetwork-camzzz/Poke20@main/Pokemon/Images/crystal.jpg" alt="Pokémon Crystal" onerror="this.style.display='none';this.parentElement.querySelector('.card-img-fallback').style.display='flex'">
         <div class="card-img-fallback">Crystal</div>
@@ -816,8 +816,6 @@
   }
 
   // ── PROGRESS SIMULATION ──
-  // Iframes don't expose real byte progress, so we simulate a believable
-  // ramp that holds just below 100% until the load event fires.
   let progressTimer = null;
   let currentPct    = 0;
 
@@ -833,14 +831,12 @@
     setProgress(0);
     clearInterval(progressTimer);
 
-    // Fast ramp to ~30%, then slow crawl to ~88%, then stall waiting for load event
     progressTimer = setInterval(() => {
       if (currentPct < 30) {
         setProgress(currentPct + 2.5);
       } else if (currentPct < 88) {
         setProgress(currentPct + 0.4);
       }
-      // holds at 88 until iframe fires load
     }, 80);
   }
 
@@ -858,61 +854,67 @@
   }
 
   // ── OPEN / CLOSE GAME ──
-  let currentBlobUrl = null;
+function openGame(url, title, e) {
+  e.preventDefault();
 
-  function openGame(url, title, e) {
-    e.preventDefault();
+  const overlay     = document.getElementById('gameOverlay');
+  const frame       = document.getElementById('gameFrame');
+  const splash      = document.getElementById('gameSplash');
+  const titleEl     = document.getElementById('gameTitle');
+  const splashTitle = document.getElementById('gameSplashTitle');
+  const statusEl    = document.getElementById('gameLoadStatus');
 
-    const overlay     = document.getElementById('gameOverlay');
-    const frame       = document.getElementById('gameFrame');
-    const splash      = document.getElementById('gameSplash');
-    const titleEl     = document.getElementById('gameTitle');
-    const splashTitle = document.getElementById('gameSplashTitle');
-    const statusEl    = document.getElementById('gameLoadStatus');
+  frame.classList.remove('loaded');
+  splash.classList.remove('hidden');
+  titleEl.textContent     = title;
+  splashTitle.textContent = title;
+  statusEl.textContent    = 'Loading...';
+  statusEl.className      = 'game-load-status loading';
 
-    // Reset state
-    frame.classList.remove('loaded');
-    splash.classList.remove('hidden');
-    titleEl.textContent     = title;
-    splashTitle.textContent = title;
-    statusEl.textContent    = 'Loading...';
-    statusEl.className      = 'game-load-status loading';
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
 
-    overlay.classList.add('active');
-    document.body.style.overflow = 'hidden';
+  startProgress();
 
-    startProgress();
+  // Get the base URL for this game (folder it lives in)
+  const baseUrl = url.substring(0, url.lastIndexOf('/') + 1);
 
-    // Fetch the HTML from jsDelivr and run it as a blob so the browser executes it
-    fetch(url)
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.text();
-      })
-      .then(html => {
-        // Revoke any previous blob URL to free memory
-        if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+  fetch(url)
+    .then(res => {
+      if (!res.ok) throw new Error('Network response was not ok');
+      return res.text();
+    })
+    .then(html => {
+      // Inject a <base> tag so all relative URLs resolve against jsDelivr
+      const fixedHtml = html.replace(
+        /<head([^>]*)>/i,
+        `<head$1><base href="${baseUrl}">`
+      );
 
-        const blob = new Blob([html], { type: 'text/html' });
-        currentBlobUrl = URL.createObjectURL(blob);
+      const blob = new Blob([fixedHtml], { type: 'text/html' });
+      const blobUrl = URL.createObjectURL(blob);
 
-        frame.onload = () => finishProgress();
-        frame.onerror = () => {
-          clearInterval(progressTimer);
-          setProgress(100);
-          statusEl.textContent = 'Error';
-          document.getElementById('gameSplashStatus').textContent = 'Failed to load — try again';
-        };
-
-        frame.src = currentBlobUrl;
-      })
-      .catch(() => {
+      frame.onload = () => {
+        finishProgress();
+        URL.revokeObjectURL(blobUrl);
+      };
+      frame.onerror = () => {
         clearInterval(progressTimer);
         setProgress(100);
         statusEl.textContent = 'Error';
-        document.getElementById('gameSplashStatus').textContent = 'Failed to fetch — try again';
-      });
-  }
+        document.getElementById('gameSplashStatus').textContent = 'Failed to load — try again';
+        URL.revokeObjectURL(blobUrl);
+      };
+
+      frame.src = blobUrl;
+    })
+    .catch(() => {
+      clearInterval(progressTimer);
+      setProgress(100);
+      statusEl.textContent = 'Error';
+      document.getElementById('gameSplashStatus').textContent = 'Failed to fetch — try again';
+    });
+}
 
   function closeGame() {
     clearInterval(progressTimer);
@@ -920,10 +922,6 @@
     document.getElementById('gameFrame').src = '';
     document.getElementById('gameFrame').classList.remove('loaded');
     document.body.style.overflow = '';
-    if (currentBlobUrl) {
-      URL.revokeObjectURL(currentBlobUrl);
-      currentBlobUrl = null;
-    }
   }
 
   // Attach click handlers to all cards
